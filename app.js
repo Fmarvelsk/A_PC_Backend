@@ -4,15 +4,15 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const cookieParser = require ('cookie-parser');
 const session = require('express-session');
-
+const dotenv = require('dotenv/config')
 
 const app = express()
 
 const userRoute = require('./route/usersRoute');
 const candidateRoute = require('./route/candidateRoute');
 
-const url = 'mongodb://localhost:27017/marv';
-mongoose.connect(url, {useNewUrlParser: true,useUnifiedTopology: true})
+const dburl = process.env.DB_CONNECTION;
+mongoose.connect(dburl, {useNewUrlParser: true,useUnifiedTopology: true})
 .then( () => {
     console.log('Connected to Database')
 })
