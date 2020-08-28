@@ -7,6 +7,7 @@ candidateRoute.get('/candidateList', (req, res, next)=> {
     candidate.find()
     .then(data => 
         res.json(data))
+        
     .catch(err =>
         next(err))
 })
