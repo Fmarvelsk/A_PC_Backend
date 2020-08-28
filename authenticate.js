@@ -30,13 +30,16 @@ passport.use(new Strategy(
           err.status = 401;
            return done(err)
           }
-        if(!user.verifyPassword(password)){
+        if(user.password != password){
+          console.log('Wrong password')
            return done(null, false)
+           
           }
           return done(null, user)
       })
 
 
+ 
     }))
 
 
