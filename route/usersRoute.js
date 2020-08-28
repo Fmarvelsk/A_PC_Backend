@@ -2,7 +2,7 @@ const express = require('express');
 const passport = require('passport');
 const User = require('../models/usersModels');
 const bodyParser = require('body-parser');
-const user = require('../models/usersModels');
+const bcrypt = require('bcrypt')
 
 const authRouter = express.Router();
 
@@ -32,20 +32,27 @@ authRouter.get('/logout', (req, res, next) => {
 })
 
 authRouter.post('/signup', (req, res, next) => {
-    if(req.body.email && req.body.username && req.body.password){
-        User.findOne(req.body.email).then(data => {
-            if
+    const {email, username, password} = req.body
+    if(req.body){
+        User.findOne({email}).then(data => {
+            if(data) {
+               return res.status(400).send('Email already exist')
+            }
         })
     var userData ={
         email : req.body.email,
         username : req.body.username,
-        password : req.body.password,
-        
+        password : req.body.password,        
 
  }
- User.create(userData).then(user => res.json(user))
+ bcrypt.genSalt(10, function(err, salt) {
+    bcrypt.hash(userData.password, salt, function(err, hash) {
+        
+    });
+});
+   User.create(userData).then(user => res.json(user))
  .catch( err => err)
-    }
+    }  
  
 })
 
