@@ -8,13 +8,13 @@ const userInfo = new Schema({
         required : true,
         unique : true,
         trim : true,
-        minlength : 3
+        minlength : 6
     },
     password :{
         type : String,
         required : true,
         unique : true,
-        minlength : 3
+        minlength : 6
     },
     email : {
         type : String,

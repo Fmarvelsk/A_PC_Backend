@@ -5,14 +5,19 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt')
 const validate = require('../validate/validate')
 const authRouter = express.Router();
-
+const jwt = require('jsonwebtoken')
+require('dotenv/config')
 
 authRouter.use(bodyParser.json())
 
 authRouter.post('/login',  
     passport.authenticate('local', {successRedirect: '/', successMessage: 'You are logged in', failureRedirect : '/login'}),
     (req, res, next) => {
+        const token = jwt.sign({
+            _id : user_id
+        }, process.env.JWTWEBTOKEN)
   res.redirect('/')
+  res.header('auth-token', token).send(token)
   
     }    
 )
@@ -32,8 +37,14 @@ authRouter.get('/logout', (req, res, next) => {
 })
 
 authRouter.post('/signup', (req, res, next) => {
+    const {error, isValid} = validate(req.body)
+    
+    if(!isValid){
+        console.log(isValid)
+        return res.status(404).send({ response: error})
+
+    }
     const {email, username, password} = req.body
-    const respone = validate.isValid(req.body)
         User.findOne({email}).then(data => {
             if(data) {
                return res.status(400).send('Email already exist')
@@ -61,6 +72,7 @@ authRouter.post('/signup', (req, res, next) => {
        
         
 })
+
 
 
 module.exports = authRouter;
