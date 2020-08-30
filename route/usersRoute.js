@@ -3,7 +3,7 @@ const passport = require('passport');
 const User = require('../models/usersModels');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt')
-
+const validate = require('../validate/validate')
 const authRouter = express.Router();
 
 
@@ -33,16 +33,16 @@ authRouter.get('/logout', (req, res, next) => {
 
 authRouter.post('/signup', (req, res, next) => {
     const {email, username, password} = req.body
-    if(req.body){
+    const respone = validate.isValid(req.body)
         User.findOne({email}).then(data => {
             if(data) {
                return res.status(400).send('Email already exist')
             }
             else{
                 var userData =new User({
-                    email : req.body.email,
-                    username : req.body.username,
-                    password : req.body.password,        
+                    email,
+                    username,
+                    password,        
             
              })
              bcrypt.genSalt(10, function(err, salt) {
@@ -59,8 +59,8 @@ authRouter.post('/signup', (req, res, next) => {
             }
         })
        
-    
-    }
+        
 })
+
 
 module.exports = authRouter;
