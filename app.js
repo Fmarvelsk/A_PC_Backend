@@ -11,6 +11,8 @@ const app = express()
 const userRoute = require('./route/usersRoute');
 const candidateRoute = require('./route/candidateRoute');
 
+const port = process.env.PORT || 4000;
+
 const dburl = process.env.DB_CONNECTION;
 mongoose.connect(dburl, {useNewUrlParser: true,useUnifiedTopology: true})
 .then( () => {
@@ -19,20 +21,20 @@ mongoose.connect(dburl, {useNewUrlParser: true,useUnifiedTopology: true})
 .catch( (err) =>{
     console.log('Error connecting to database', err)
 })
-
+ 
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
-app.use(session({ secret : 'library', resave : 'true', saveUninitialized: true}));
+app.use(session({ secret : 'library', resave: false, saveUninitialized: true}));
 require('./authenticate')(app);
+//require('./controllers/googleEmail')(port)(app)
 
 app.use('/users', userRoute);
 app.use('/', candidateRoute)
 
-const port = process.env.PORT || 4000;
-
 app.listen(port, () => {
     console.log(`Listening to ${port}`)
 })
+
 
 module.exports = app;

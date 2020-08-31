@@ -19,6 +19,13 @@ const userInfo = new Schema({
     email : {
         type : String,
         minlength : 10
+    },
+    googleID: {
+        String
+    },
+
+    image: {
+        String
     }
 }, {
     timestamps: true

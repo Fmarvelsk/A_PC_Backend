@@ -4,6 +4,7 @@ const User = require('../models/usersModels');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt')
 const validate = require('../validate/validate')
+const loginEmail = require('../controllers/sendMail')
 const authRouter = express.Router();
 const jwt = require('jsonwebtoken')
 require('dotenv/config')
@@ -15,7 +16,7 @@ authRouter.post('/login',
     (req, res, next) => {
         const token = jwt.sign({
             _id : user_id
-        }, process.env.JWTWEBTOKEN)
+        }, process.env.JWT_WEBTOKEN)
   res.redirect('/')
   res.header('auth-token', token).send(token)
   
@@ -62,7 +63,9 @@ authRouter.post('/signup', (req, res, next) => {
                     userData.password= hash
                     userData
                     .save()
-                    .then(user => res.json(user))
+                    .then(user => 
+                        loginEmail.sendConfirmationEmail(user),
+                        res.json(user))
                     .catch( err => err)
                 });
             });
