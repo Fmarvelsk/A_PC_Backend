@@ -35,7 +35,9 @@ mailer.sendMail(email, function(err, res) {
 const forgotPasswordEmail = async () => {
     const jwt = await jwt.signin({
         _id : user_id   
-    }, process.env.JWT_WEBTOKEN)
+    }, process.env.JWT_WEBTOKEN, {
+        expiresIn : '300s'
+    })
     const forgotPassword = {
         to: user.email,
         from: process.env.SENDER_MAIL,

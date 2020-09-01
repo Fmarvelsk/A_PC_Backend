@@ -7,6 +7,8 @@ const validate = require('../validate/validate')
 const loginEmail = require('../controllers/sendMail')
 const authRouter = express.Router();
 const jwt = require('jsonwebtoken')
+const verifyJwt =require('../validate/verifyToken');
+const user = require('../models/usersModels');
 require('dotenv/config')
 
 authRouter.use(bodyParser.json())
@@ -76,6 +78,42 @@ authRouter.post('/signup', (req, res, next) => {
         
 })
 
+authRouter.get('/forgot-password', (req, res, next ) => {
+    const {error, isValid} = validate(req.body)
+    if(!isValid){
+        return res.status(400).send({response : error})
+    }
+    const { email } = req.body
+    User.findOne({email}).then(user => {
+        loginEmail.forgotPasswordEmail(user)
+        res.status(200).send('mail is sent, check your mail')
+        res.json(user)
+        
+    }).catch(err => res.json(err),
+    res.status(404).send('Error mail not sent'))
+})
 
+authRouter.patch('/change-password', (req, res, next) => {
+    const {error, isValid} = validate(req.body)
+    if(!isValid){
+        res.status(404).send({response: error})
+    }
+    const { email } = req.body
+    verifyJwt()
+        User.findBy({email}).then( result => {
+            bcrypt.genSalt(10, (err, salt) => {
+                bcrypt.hash(password, salt, (err, hash) => {
+                    if(err) {
+                        return res.status(400).send({response: 'Error changing password'})
+                    }
+                    result.password = hash
+                    result.save().then(e =>{
+                        res.status(200).send({success: true, response: 'Password change'})
+                    } ).catch(err => res.json(err))
+                })
+            })
+        })
+    
+})
 
 module.exports = authRouter;
