@@ -79,27 +79,27 @@ authRouter.post('/signup', (req, res, next) => {
 })
 
 authRouter.get('/forgot-password', (req, res, next ) => {
-    const {error, isValid} = validate(req.body)
-    if(!isValid){
-        return res.status(400).send({response : error})
-    }
+    
     const { email } = req.body
     User.findOne({email}).then(user => {
-        loginEmail.forgotPasswordEmail(user)
+        if(!user){
+            return res.status(400).send({response : 'user not found'})
+        }
+        else {
+            loginEmail.sendConfirmationEmail(user)
         res.status(200).send('mail is sent, check your mail')
-        res.json(user)
+        }
         
-    }).catch(err => res.json(err),
-    res.status(404).send('Error mail not sent'))
+    }).catch(err => (err) )
 })
 
-authRouter.patch('/change-password', (req, res, next) => {
+authRouter.patch('/change-password', async (req, res, next) => {
     const {error, isValid} = validate(req.body)
     if(!isValid){
         res.status(404).send({response: error})
     }
     const { email } = req.body
-    verifyJwt()
+    await verifyJwt()
         User.findBy({email}).then( result => {
             bcrypt.genSalt(10, (err, salt) => {
                 bcrypt.hash(password, salt, (err, hash) => {
@@ -114,6 +114,6 @@ authRouter.patch('/change-password', (req, res, next) => {
             })
         })
     
-})
+}) 
 
 module.exports = authRouter;

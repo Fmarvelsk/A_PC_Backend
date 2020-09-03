@@ -3,7 +3,7 @@ const sgTransport = require('nodemailer-sendgrid-transport');
 const jwt = require('jsonwebtoken')
 
 module.exports = (user) => {
-     
+     console.log(user)
 const options = {
     auth: {
         api_user: process.env.SENDGRID_USERNAME,
@@ -13,7 +13,8 @@ const options = {
     
 const mailer = nodemailer.createTransport(sgTransport(options));
 
-const SendConfirmationEmail = async () => {
+const sendConfirmationEmail = async () => {
+    console.log()
     const jwt = await jwt.signin({
         _id : user_id   
     }, process.env.JWT_WEBTOKEN)
