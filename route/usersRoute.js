@@ -8,7 +8,6 @@ const loginEmail = require('../controllers/sendMail')
 const authRouter = express.Router();
 const jwt = require('jsonwebtoken')
 const verifyJwt =require('../validate/verifyToken');
-const user = require('../models/usersModels');
 require('dotenv/config')
 
 authRouter.use(bodyParser.json())
@@ -94,11 +93,10 @@ authRouter.get('/forgot-password', (req, res, next ) => {
 })
 
 authRouter.patch('/change-password', async (req, res, next) => {
-    const {error, isValid} = validate(req.body)
-    if(!isValid){
+    const { email } = req.body
+        if(email === undefined || null){
         res.status(404).send({response: error})
     }
-    const { email } = req.body
     await verifyJwt()
         User.findBy({email}).then( result => {
             bcrypt.genSalt(10, (err, salt) => {
@@ -115,5 +113,16 @@ authRouter.patch('/change-password', async (req, res, next) => {
         })
     
 }) 
+
+authRouter.get('/authenticateToken', verifyJwt, (req, res) => {
+    res.status(200).send({response: req.token})
+  })
+
+authRouter.put('/reset-password', (res, req, next) => {
+    const email = req.body
+    User.findOne({email}).then( user => {
+        console.log(user)
+    }).catch(err=> err)
+})
 
 module.exports = authRouter;

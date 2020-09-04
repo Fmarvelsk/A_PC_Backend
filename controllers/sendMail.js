@@ -22,8 +22,7 @@ const email = {
     to: user.email,
     from: process.env.SENDER_MAIL,
     subject: 'Confirmaion Email',
-    text: 'Awesome sauce',
-    html: '<b>Awesome sauce</b>'
+    html: `<b>Awesome sauce confirm mail at <a href=http://localhost:5555/users//authenticateToken/${jwt}></a></b>`
 };
  
 mailer.sendMail(email, function(err, res) {

@@ -5,7 +5,7 @@ const verifyJWT = require('../validate/verifyToken')
 const candidateRoute = express.Router();
 
 candidateRoute.get('/candidateList', (req, res, next)=> {
-    Candidate.find()
+    Candidate.findById()
     .then(data => 
         res.json(data))
         
