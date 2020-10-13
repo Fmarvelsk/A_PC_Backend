@@ -6,23 +6,22 @@ const bcrypt = require('bcrypt')
 const validate = require('../validate/validate')
 const loginEmail = require('../controllers/sendMail')
 const authRouter = express.Router();
-const jwt = require('jsonwebtoken')
-const verifyJwt =require('../validate/verifyToken');
+const verifyJwt = require('../validate/verifyToken');
 require('dotenv/config')
 
 authRouter.use(bodyParser.json())
 
 authRouter.post('/login',  
-    passport.authenticate('local', {successRedirect: '/', successMessage: 'You are logged in', failureRedirect : '/login'}),
-    (req, res, next) => {
-        const token = jwt.sign({
-            _id : user_id
-        }, process.env.JWT_WEBTOKEN)
-  res.redirect('/')
-  res.header('auth-token', token).send(token)
-  
-    }    
+    passport.authenticate('local', {successRedirect: '/users/dashboard', successMessage: 'You are logged in', failureRedirect : '/login'}),
+
 )
+
+authRouter.get('/dashboard', verifyJwt, (req, res, next)=>{
+    res.status(200).send({response: 'You are logged in'})
+})
+authRouter.get('/login', (req, res, next) => {
+    res.status(200).send({response : 'login page'})
+})
 
 authRouter.get('/logout', (req, res, next) => {
     if(req.session) {
@@ -31,7 +30,7 @@ authRouter.get('/logout', (req, res, next) => {
             return next(err)
         } 
     else{
-    res.redirect('/')       
+    res.redirect('/login')       
     }}
         )
     }
@@ -64,9 +63,9 @@ authRouter.post('/signup', (req, res, next) => {
                     userData.password= hash
                     userData
                     .save()
-                    .then(user => 
-                        loginEmail.sendConfirmationEmail(user),
-                        res.json(user))
+                    .then(user => {
+                            loginEmail.sendConfirmationEmail(user)
+                        res.status(200).send({response: "Mail sent successfully"})})
                     .catch( err => err)
                 });
             });
@@ -85,20 +84,20 @@ authRouter.get('/forgot-password', (req, res, next ) => {
             return res.status(400).send({response : 'user not found'})
         }
         else {
-            loginEmail.sendConfirmationEmail(user)
+            loginEmail.forgotPasssword(user)
         res.status(200).send('mail is sent, check your mail')
         }
         
     }).catch(err => (err) )
 })
 
-authRouter.patch('/change-password', async (req, res, next) => {
-    const { email } = req.body
+authRouter.patch('/change-password', verifyJwt, async (req, res, next) => {
+    const {password, email} = req.body
         if(email === undefined || null){
-        res.status(404).send({response: error})
+        res.status(404).send({response: 'empty'})
     }
-    await verifyJwt()
-        User.findBy({email}).then( result => {
+        User.findOne({email}).then( result => {
+            console.log(result)
             bcrypt.genSalt(10, (err, salt) => {
                 bcrypt.hash(password, salt, (err, hash) => {
                     if(err) {
@@ -106,7 +105,7 @@ authRouter.patch('/change-password', async (req, res, next) => {
                     }
                     result.password = hash
                     result.save().then(e =>{
-                        res.status(200).send({success: true, response: 'Password change'})
+                        res.status(200).send({success: true, response: 'Password changed'})
                     } ).catch(err => res.json(err))
                 })
             })
@@ -115,13 +114,32 @@ authRouter.patch('/change-password', async (req, res, next) => {
 }) 
 
 authRouter.get('/authenticateToken', verifyJwt, (req, res) => {
-    res.status(200).send({response: req.token})
+    res.status(200).send({response: 'Password reset page'})
+
   })
 
-authRouter.put('/reset-password', (res, req, next) => {
-    const email = req.body
-    User.findOne({email}).then( user => {
-        console.log(user)
+authRouter.put('/reset-password', verifyJwt, (res, req, next) => {
+    const {password, old_password, email } = req.body
+    User.findOne({email}).then( result => {
+        if(!result.password) {
+            res.status(400).send({response: 'There is no password'})
+        }
+        bcrypt.compare(old_password, result.password), (err, hash) => {
+            bcrypt.hash(password, 10).then( pass => {
+                if(err){
+                    console.log('Error changing password')
+                }
+                result.password = hash 
+                result
+                .save().then( e => {
+                    return res.status(200).send({response: 'Sucessfully changed password'})
+                }).catch(err =>  err)
+                
+            }).catch(err => {
+                console.log('Error hashing password')
+            })
+        }
+        
     }).catch(err=> err)
 })
 

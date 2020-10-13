@@ -5,43 +5,43 @@ const Schema = mongoose.Schema;
 
 var accessorSchema = new Schema({
     
-    Accessorname:{type:String, required : true},
-    Accessoremail:{type:String, required : true},
-    University: {type:String, required : true},
-    Email:{type: String, required : true},
-    Status: {
-        type: String,
-        enum: ['invitationsent', 'applicationsent','papersent','paperrecieved']
-    },
-    Date : {type : Date, default: Date.now}
+    fullname:{type:String, required : true},
+    university: {type:String, required : true},
+    email:{type: String, required : true},
+    //status : {
+        //type: "String"
+   // enum:["papersent", "paperaccepted", "invitationsent", "invitationrecevied" ] }
+    date : {type : Date, default: Date.now}
 })
 
 const candidateSchema = new Schema(
     {
-        Surname: {
+        surname: {
             type : String,
             required : true},
-        Othername: {
+        othername: {
             type : String,
             required : true},
-        Email :{
+        email :{
             type: String,
             required : true
         },
-        Faculty: {
+        faculty: {
             type : String,
             required : true
         },
-        Department: {
+        department: {
             type : String,
             required : true
         },
-        Level : {
+        level : {
             type : String,
         },
-        accessor: [accessorSchema]
-        
-    }
+    accessor:[accessorSchema]
+    },
+    {
+        timestamps:true
+    }    
 )
 const candidate = mongoose.model('Candidate', candidateSchema)
 

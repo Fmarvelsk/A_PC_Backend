@@ -5,7 +5,7 @@ const verifyJWT = require('../validate/verifyToken')
 const candidateRoute = express.Router();
 
 candidateRoute.get('/candidateList', (req, res, next)=> {
-    Candidate.findById()
+    Candidate.find()
     .then(data => 
         res.json(data))
         
@@ -13,15 +13,21 @@ candidateRoute.get('/candidateList', (req, res, next)=> {
         next(err))
 })
 
-candidateRoute.post('/addCandidate', verifyJWT, (req, res, next) => {
+candidateRoute.post('/addCandidate', (req, res, next) => {
+    const { surname } = req.body
+    if(surname === null || surname === undefined){
+        res.status(400).send({response: "Invalid data"})
+    }
+    else { 
     Candidate.create(new Candidate(req.body))
     .then(data => {
-        res.json(data)
-        res.statusCode = 200
+        res.status(200).json(data)
+    })
         .catch(err => {
             return next(err)
         })
-    })
+    
+}
 })
 candidateRoute.get('/candidate/:id', (req, res, next) => {
     Candidate.findById(req.params.id)
@@ -31,12 +37,12 @@ candidateRoute.get('/candidate/:id', (req, res, next) => {
 
 candidateRoute.delete('/delCandidate/:id', verifyJWT, (req, res, next) => {
     Candidate.findByIdAndDelete(req.params.id)
-    .then( ()=>{
-        res.json('Candidate deleted')
+    .then( (data)=>{
+        console.log('Candidate deleted')
+        res.status(200).json(data)
     })
     .catch(err => {
-        err = 'Cannot find user',
-        res.statusMessage = err;
+        err = 'Cannot find user';
         return next(err)
         
     })

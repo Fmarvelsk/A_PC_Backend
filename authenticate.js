@@ -1,6 +1,8 @@
 const passport = require('passport');
 const { Strategy } = require ('passport-local');
 const User = require('./models/usersModels');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken')
 
 const passportConfig= (app) =>{
     app.use(passport.initialize());
@@ -30,12 +32,20 @@ passport.use(new Strategy(
           err.status = 401;
            return done(err)
           }
-        if(user.password != password){
+        bcrypt.compare(password, user.password).then(valid => {
+          console.log(valid)
+            if(!valid){    
           console.log('Wrong password')
-           return done(null, false)
-           
-          }
-          return done(null, user)
+          return done(null, false)
+          
+            }
+        }).catch(()=> {
+          console.log('Cannot compare password')
+        })
+        const token = jwt.sign({
+          _id : user._id
+      }, process.env.JWT_WEBTOKEN)
+          return done(null, user, token)
       })
 
 

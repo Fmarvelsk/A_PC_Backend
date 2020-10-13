@@ -24,7 +24,7 @@ app.get('/auth/google',
       , 'https://www.googleapis.com/auth/plus.profile.emails.read' ] }
 ));
 
-app.get('/  auth/google/callback', 
+app.get('/auth/google/callback', 
     passport.authenticate( 'google', { 
         successRedirect: '/auth/google/success',
         failureRedirect: '/auth/google/failure'
