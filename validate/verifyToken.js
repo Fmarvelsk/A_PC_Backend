@@ -7,7 +7,7 @@ module.exports = (req, res, next) => {
         try {
             const verified = jwt.verify(token, process.env.JWT_WEBTOKEN)
             req.user = verified
-            next()
+            next(req.user)
         }
         catch(err){
             res.status(400).send('Invalid Token')

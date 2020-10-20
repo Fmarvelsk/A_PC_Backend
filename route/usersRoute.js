@@ -6,17 +6,18 @@ const bcrypt = require('bcrypt')
 const validate = require('../validate/validate')
 const loginEmail = require('../controllers/sendMail')
 const authRouter = express.Router();
+const jwt = require('jsonwebtoken')
 const verifyJwt = require('../validate/verifyToken');
 require('dotenv/config')
 
 authRouter.use(bodyParser.json())
 
 authRouter.post('/login',  
-    passport.authenticate('local', {successRedirect: '/users/dashboard', successMessage: 'You are logged in', failureRedirect : '/login'}),
+    passport.authenticate('local', {successRedirect: '/users/dashboard', successMessage: 'You are logged in', failureRedirect : '/users/login'}),
 
 )
 
-authRouter.get('/dashboard', verifyJwt, (req, res, next)=>{
+authRouter.get('/dashboard', (req, res, next)=>{
     res.status(200).send({response: 'You are logged in'})
 })
 authRouter.get('/login', (req, res, next) => {
@@ -91,12 +92,21 @@ authRouter.get('/forgot-password', (req, res, next ) => {
     }).catch(err => (err) )
 })
 
-authRouter.patch('/change-password', verifyJwt, async (req, res, next) => {
-    const {password, email} = req.body
-        if(email === undefined || null){
+authRouter.post('/change-password', async (req, res, next) => {
+    const { password } = req.body
+        if(password === undefined || password === null){
         res.status(404).send({response: 'empty'})
     }
-        User.findOne({email}).then( result => {
+    
+    const token = req.header('auth-token')     
+    jwt.verify(token, process.env.JWT_WEBTOKEN, async (err, verified) => {
+        if(err){
+            res.status(401).json({response : "Unauthorised access"})
+        }
+        else{ 
+            const email  = verified._id
+            console.log(email)
+        User.findById(email).then( result => {
             console.log(result)
             bcrypt.genSalt(10, (err, salt) => {
                 bcrypt.hash(password, salt, (err, hash) => {
@@ -110,6 +120,8 @@ authRouter.patch('/change-password', verifyJwt, async (req, res, next) => {
                 })
             })
         })
+    }
+    })
     
 }) 
 
@@ -118,9 +130,20 @@ authRouter.get('/authenticateToken', verifyJwt, (req, res) => {
 
   })
 
-authRouter.put('/reset-password', verifyJwt, (res, req, next) => {
-    const {password, old_password, email } = req.body
-    User.findOne({email}).then( result => {
+authRouter.put('/reset-password', (res, req, next) => {
+    const {password, old_password} = req.body
+    if(password === old_password ){
+        res.status(401).send({ response: "passoword are the same"})
+        }
+
+    const token = req.header('auth-token')     
+    jwt.verify(token, process.env.JWT_WEBTOKEN, async (err, verified) => {
+        if(err){
+            res.status(401).json({response : "Unauthorised access"})
+        }
+        else{ 
+            const email  = verified._id
+    User.findById(email).then( result => {
         if(!result.password) {
             res.status(400).send({response: 'There is no password'})
         }
@@ -139,8 +162,10 @@ authRouter.put('/reset-password', verifyJwt, (res, req, next) => {
                 console.log('Error hashing password')
             })
         }
-        
-    }).catch(err=> err)
+            
+    }).catch(err=> console.log(err, 'cannot find user'))
+        }
+    })
 })
 
 module.exports = authRouter;

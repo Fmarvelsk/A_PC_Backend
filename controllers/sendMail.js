@@ -37,6 +37,7 @@ exports.forgotPasssword =  async (user) => {
     },process.env.JWT_WEBTOKEN,{
         expiresIn: '300s',
     })
+    console.log(newjwt)
 const forgotemail = {
     to: user.email,
     from: process.env.SENDER_MAIL,

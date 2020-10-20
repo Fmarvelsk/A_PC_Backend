@@ -13,7 +13,7 @@ candidateRoute.get('/candidateList', (req, res, next)=> {
         next(err))
 })
 
-candidateRoute.post('/addCandidate', (req, res, next) => {
+candidateRoute.post('/addCandidate', verifyJWT, (req, res, next) => {
     const { surname } = req.body
     if(surname === null || surname === undefined){
         res.status(400).send({response: "Invalid data"})
@@ -21,6 +21,7 @@ candidateRoute.post('/addCandidate', (req, res, next) => {
     else { 
     Candidate.create(new Candidate(req.body))
     .then(data => {
+        console.log(req)
         res.status(200).json(data)
     })
         .catch(err => {
@@ -38,7 +39,6 @@ candidateRoute.get('/candidate/:id', (req, res, next) => {
 candidateRoute.delete('/delCandidate/:id', verifyJWT, (req, res, next) => {
     Candidate.findByIdAndDelete(req.params.id)
     .then( (data)=>{
-        console.log('Candidate deleted')
         res.status(200).json(data)
     })
     .catch(err => {
@@ -48,7 +48,7 @@ candidateRoute.delete('/delCandidate/:id', verifyJWT, (req, res, next) => {
     })
 })
 
-candidateRoute.put('/updateCandidate/:id', verifyJWT, (req, res, next) => {
+candidateRoute.put('/updateCandidate/:id', (req, res, next) => {
     Candidate.findByIdAndUpdate(req.params.id, {
         $set: {
             accessor: req.body.accessor

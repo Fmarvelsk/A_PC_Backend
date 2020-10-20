@@ -28,24 +28,29 @@ passport.use(new Strategy(
           return done(err)
         }
         if(!user){
+          
           var err = new Error('User not Found')
           err.status = 401;
            return done(err)
           }
         bcrypt.compare(password, user.password).then(valid => {
-          console.log(valid)
+          
             if(!valid){    
           console.log('Wrong password')
+          console.log(user.password)
+          console.log(password)
           return done(null, false)
           
             }
-        }).catch(()=> {
-          console.log('Cannot compare password')
-        })
+            else {
         const token = jwt.sign({
           _id : user._id
       }, process.env.JWT_WEBTOKEN)
           return done(null, user, token)
+            }
+        }).catch(()=> {
+          console.log('Cannot compare password')
+        })
       })
 
 
